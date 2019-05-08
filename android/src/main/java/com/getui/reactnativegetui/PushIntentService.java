@@ -5,6 +5,8 @@ package com.getui.reactnativegetui;
  */
 
 import android.content.Context;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.support.annotation.RequiresPermission;
 
 import com.facebook.react.bridge.Arguments;
@@ -13,6 +15,8 @@ import com.igexin.sdk.GTIntentService;
 import com.igexin.sdk.message.GTCmdMessage;
 import com.igexin.sdk.message.GTNotificationMessage;
 import com.igexin.sdk.message.GTTransmitMessage;
+
+import org.json.JSONObject;
 
 /**
  * 继承 GTIntentService 接收来自个推的消息, 所有消息在线程中回调<br>
@@ -45,6 +49,22 @@ public class PushIntentService extends GTIntentService {
     @Override
     public void onReceiveMessageData(Context context, GTTransmitMessage msg) {
         String message = new String(msg.getPayload());
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+            if (jsonObject.has("IsHuoSound")) {
+                Integer isHuo = jsonObject.getInt("IsHuoSound");
+                if (isHuo == 1) {
+                    Uri uri = Uri.parse("android.resource://" + context.getPackageName() + "/" + R.raw.huolaila);
+                    MediaPlayer mediaPlayer = MediaPlayer.create(context, uri);
+                    mediaPlayer.start();
+//                    NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//                    Notification notification = new Notification();
+//                    notification.sound = Uri.parse("android.resource://" + context.getPackageName() + "/" + R.raw.huolaila);
+//                    manager.notify(1, notification);
+                }
+            }
+        } catch (Exception e) {
+        }
         GetuiLogger.log("onReceiveMessageData msg = " + message);
         WritableMap param = Arguments.createMap();
         param.putString("type", GetuiModule.EVENT_TYPE_PAYLOAD);
