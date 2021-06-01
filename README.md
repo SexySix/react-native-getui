@@ -1,11 +1,13 @@
-# react-native-getui （请使用版本@1.1.25）
+# react-native-getui 
 react-native-getui 是个推官方开发的 React Native 插件，使用该插件可以方便快速地集成推送功能。
+
+多厂商版本请联系技术支持
 
 
 # 环境
 
 - React Native Version ： 0.42(demo中使用的rn版本)，理论上可以任意使用其他任何RN版本
-- react-native-getui >= 1.1.23
+- 当前react-native-getui版本 1.1.35 , GetuiSdk 版本 4.3.5.9
 - taobao的源和npm源版本可能存在不一致
 
 # 安装
@@ -27,6 +29,28 @@ npm run GetuiConfigure <yourAppId> <yourAppKey> <yourAppSecret>  <yourModuleName
 npm run GetuiConfigure DI1jwW3FtZ6kGDeY5dk0Y9 DQCk2V8Jev9hqhWDU94PF9 Rtyp5trKUt8HSyzD8zRXX7 app
 
 ````
+
+```
+// 链接iOS原生代码
+npx pod-install
+```
+
+(如果是原生应用集成react-native)使用CocoaPods安装
+
+如果你的 React Native 是通过 Cocoapods 来集成的则使用下面两个步骤来集成，注意： 使用 pod 就不要使用 react-native link 了，不然会有冲突。
+
+1.在Podfile中添加如下代码：
+
+````
+pod 'GtSdkRN', :path => '../node_modules/react-native-getui'
+````
+
+2.终端执行如下命令：
+
+````
+pod install
+````
+
 #### 注意:
 
 - 如果在执行GetuiConfigure 自动安装脚本时发生错误，请使用手动安装方式。
@@ -41,6 +65,13 @@ $(SRCROOT)/../node_modules/react-native-getui/ios/RCTGetuiModule
 ````
 GetuiModule.initPush(this);
 ````
+- 本插件采用maven方式引入sdk，故需要在android/build.gradle中添加maven地址
+````
+ maven {
+            url "http://mvn.gt.igexin.com/nexus/content/repositories/releases/"
+        }
+````
+
 #### 注意：
 
 - 有可能您的MainActivity中未重写onCreate方法，如果未重写，请重写onCreate方法，方法如下：
@@ -57,7 +88,46 @@ import android.os.Bundle;
 import com.getui.reactnativegetui.GetuiModule;
 ````
 
+####  react-native 0.60.0以上版本在Android上的初始化流程有所变化
+如果你使用0.60.0以上的RN版本，请在MainApplication.java的文件里注册以下信息
+````java
+private final ReactNativeHost mReactNativeHost =
+      new ReactNativeHost(this) {
+        @Override
+        public boolean getUseDeveloperSupport() {
+          return BuildConfig.DEBUG;
+        }
+
+        @Override
+        protected List<ReactPackage> getPackages() {
+          @SuppressWarnings("UnnecessaryLocalVariable")
+          List<ReactPackage> packages = new PackageList(this).getPackages();
+          // Packages that cannot be autolinked yet can be added manually here, for example:
+           // 注册个推插件包
+           packages.add(new GetuiPackage());
+          return packages;
+        }
+
+        @Override
+        protected String getJSMainModuleName() {
+          return "index";
+        }
+      };
+      .......
+       @Override
+  public void onCreate() {
+    super.onCreate();
+    SoLoader.init(this, /* native exopackage */ false);
+    // 初始化个推模块
+    GetuiModule.initPush(this);
+    initializeFlipper(this); // Remove this line if you don't want Flipper enabled
+  }
+
+
+````
+
 ### 手动安装
+
 1、
 ````
 npm install react-native-getui -save
@@ -79,6 +149,8 @@ react-native link
 ````
 $(SRCROOT)/../node_modules/react-native-getui/ios/RCTGetuiModule
 ````
+
+6、因新版本功能修改，需要添加“libresolv.tbd”库
 
 ### 订阅消息
 

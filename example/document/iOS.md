@@ -81,16 +81,15 @@ Xcode 工程中需要注册个推 SDK 、注册 deviceToken 、监听消息回�
 ````
 - (void)application:(UIApplication *)application
 didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-  NSString *token = [[deviceToken description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
-    token = [token stringByReplacingOccurrencesOfString:@" " withString:@""];
-    NSLog(@"\n>>>[DeviceToken Success]:%@\n\n", token);
-
-    // [ GTSdk ]：向个推服务器注册deviceToken
-    [GeTuiSdk registerDeviceToken:token];
+  // [ GTSDK ]：（新版）向个推服务器注册deviceToken
+  [GeTuiSdk registerDeviceTokenData:deviceToken];
+     
+  // [ 测试代码 ] 日志打印DeviceToken
+  NSLog(@"[ TestDemo ] [ DeviceToken(NSData) ]: %@\n\n", deviceToken);
 }
 ````
 
-4、为了在收到推送点击进入应用能够获取该条推送内容需要在 AppDelegate.m didReceiveRemoteNotification 方法里面添加 [[NSNotificationCenter defaultCenter] postNotificationName:kJPFDidReceiveRemoteNotification object:userInfo] 方法，注意：这里需要在两个方法里面加一个是iOS7以前的一个是iOS7即以后的，如果AppDelegate.m 没有这个两个方法则直接复制这两个方法，如下所示：
+4、为了在收到推送点击进入应用能够获取该条推送内容需要在 AppDelegate.m didReceiveRemoteNotification 方法里面添加 [[NSNotificationCenter defaultCenter] postNotificationName: object:] 方法，注意：这里需要在两个方法里面加一个是iOS7以前的一个是iOS7即以后的，如果AppDelegate.m 没有这个两个方法则直接复制这两个方法，如下所示：
 
 ````
 #pragma mark - APP运行中接收到通知(推送)处理 - iOS 10以下版本收到推送
@@ -116,7 +115,7 @@ didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
 
     NSLog(@"willPresentNotification：%@", notification.request.content.userInfo);
-  	[[NSNotificationCenter defaultCenter]postNotificationName:GT_DID_RECEIVE_REMOTE_NOTIFICATION object:@{@"type":@"apns",@"userInfo":userInfo}];
+  	[[NSNotificationCenter defaultCenter]postNotificationName:GT_DID_RECEIVE_REMOTE_NOTIFICATION object:@{@"type":@"apns",@"userInfo":notification.request.content.userInfo}];
 
     // 根据APP需要，判断是否要提示用户Badge、Sound、Alert
     completionHandler(UNNotificationPresentationOptionBadge | UNNotificationPresentationOptionSound | UNNotificationPresentationOptionAlert);
